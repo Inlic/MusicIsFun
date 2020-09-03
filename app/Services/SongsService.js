@@ -3,6 +3,14 @@ import Song from "../Models/Song.js";
 import { sandBoxApi } from "./AxiosService.js";
 
 class SongsService {
+
+  setActiveSearch(id) {
+    ProxyState.activeSong = ProxyState.songs.find(s => s._id == id)
+  }
+
+  setActivePlaylist(id) {
+    ProxyState.activeSong = ProxyState.playlist.find(s => s._id == id)
+  }
   /**
    * Takes in a search query and retrieves the results that will be put in the store
    * @param {string} query
@@ -24,28 +32,23 @@ class SongsService {
    * Retrieves the saved list of songs from the sandbox
    */
   async getMySongs() {
-    let res = await sandBoxApi.get()
-    //TODO What are you going to do with this result
-    let results = res.data.data.map(rawData => new Song(rawData));
+    let res = await sandBoxApi.get('')
+    ProxyState.playlist = res.data.data.map(s => new Song(s));
   }
 
-  /**
-   * Takes in a song id and sends it from the search results to the sandbox to be saved.
-   * Afterwords it will update the store to reflect saved info
-   * @param {string} id
-   */
-  addSong(id) {
-    //TODO you only have an id, you will need to find it in the store before you can post it
-    //TODO After posting it what should you do?
+
+  async addSong() {
+    await sandBoxApi.post('', ProxyState.activeSong)
+    ProxyState.playlist.push(ProxyState.activeSong)
+    ProxyState.playlist = ProxyState.playlist
+    this.getMySongs()
   }
 
-  /**
-   * Sends a delete request to the sandbox to remove a song from the playlist
-   * Afterwords it will update the store to reflect saved info
-   * @param {string} id
-   */
-  removeSong(id) {
-    //TODO Send the id to be deleted from the server then update the store
+  async removeSong() {
+    let id = ProxyState.activeSong._id
+    await sandBoxApi.delete(id)
+    ProxyState.playlist = ProxyState.playlist.filter(s => s._id != id)
+    ProxyState.activeSong = null
   }
 }
 
