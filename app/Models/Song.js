@@ -13,7 +13,6 @@ export default class Song {
     this._id = data.trackId || data._id || generateId();
     this.sandbox = false
     if (data.user) {
-      console.log("Sandbox Item Created");
       this.sandbox = true
     }
   }
